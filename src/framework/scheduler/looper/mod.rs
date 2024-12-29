@@ -173,59 +173,29 @@ impl Looper {
     }
 
     fn recv_message(&mut self) -> Option<FasData> {
-        info!("开始接收 perf event 数据...");
-        info!(
-            "Analyzer 状态: restart_counter={}, restart_timer={:?}", 
-            self.analyzer_state.restart_counter,
-            self.analyzer_state.restart_timer.elapsed()
-        );
-        
-        let result = self.analyzer_state
+        self.analyzer_state
             .analyzer
             .recv_timeout(Duration::from_millis(100))
-            .map(|(pid, frametime)| {
-                info!("收到 perf event 数据: pid={}, frametime={:?}", pid, frametime);
-                FasData { pid, frametime }
-            });
-        
-        if result.is_none() {
-            info!("perf event 接收超时,未收到数据");
-            info!("当前 topapp pids: {:?}", self.windows_watcher.topapp_pids());
-            if let Some(buffer) = &self.fas_state.buffer {
-                info!("当前活跃的 buffer pid: {}", buffer.package_info.pid);
-            }
-        }
-        
-        result
+            .map(|(pid, frametime)| FasData { pid, frametime })
     }
 
     fn update_analyzer(&mut self) -> Result<()> {
         for pid in self.windows_watcher.topapp_pids().iter().copied() {
             let pkg = get_process_name(pid)?;
             if self.config.need_fas(&pkg) {
-                info!("尝试附加进程到 analyzer: pid={}, pkg={}", pid, pkg);
-                match self.analyzer_state.analyzer.attach_app(pid) {
-                    Ok(_) => info!("成功附加进程: pid={}", pid),
-                    Err(e) => info!("附加进程失败: pid={}, error={:?}", pid, e),
-                }
+                self.analyzer_state.analyzer.attach_app(pid)?;
             }
         }
         Ok(())
     }
 
     fn restart_analyzer(&mut self) {
-        info!("准备重启 analyzer, 计数: {}", self.analyzer_state.restart_counter);
-        
         if self.analyzer_state.restart_counter == 1 {
             if self.analyzer_state.restart_timer.elapsed() >= Duration::from_secs(1) {
-                info!("执行 analyzer 重启");
                 self.analyzer_state.restart_timer = Instant::now();
                 self.analyzer_state.restart_counter = 0;
                 self.analyzer_state.analyzer.detach_apps();
-                match self.update_analyzer() {
-                    Ok(_) => info!("analyzer 重启成功"),
-                    Err(e) => info!("analyzer 重启失败: {:?}", e),
-                }
+                let _ = self.update_analyzer();
             }
         } else {
             self.analyzer_state.restart_counter += 1;
@@ -321,21 +291,9 @@ impl Looper {
     }
 
     pub fn buffer_update(&mut self, data: &FasData) -> Option<BufferWorkingState> {
-        info!("当前活跃的顶层应用 pids: {:?}", self.windows_watcher.topapp_pids());
-        
         if unlikely(
             !self.windows_watcher.topapp_pids().contains(&data.pid) || data.frametime.is_zero(),
         ) {
-            info!(
-                "buffer 更新检查失败: pid={}, frametime={:?}, 原因: {}",
-                data.pid,
-                data.frametime,
-                if !self.windows_watcher.topapp_pids().contains(&data.pid) {
-                    "PID 不在顶层应用列表中"
-                } else {
-                    "frametime 为零"
-                }
-            );
             return None;
         }
 
@@ -344,26 +302,14 @@ impl Looper {
 
         if let Some(buffer) = self.fas_state.buffer.as_mut() {
             buffer.push_frametime(frametime, &self.extension);
-            info!("更新现有 buffer: pid={}, frametime={:?}", pid, frametime);
             Some(buffer.state.working_state)
         } else {
             let Ok(pkg) = get_process_name(data.pid) else {
-                info!("获取进程名称失败: pid={}", data.pid);
                 return None;
             };
-            
-            let target_fps = match self.config.target_fps(&pkg) {
-                Some(fps) => {
-                    info!("获取目标 FPS 成功: pkg={}, target_fps={:?}", pkg, fps);
-                    fps
-                },
-                None => {
-                    info!("应用 {} 未配置目标 FPS", pkg);
-                    return None;
-                }
-            };
+            let target_fps = self.config.target_fps(&pkg)?;
 
-            info!("创建新的 fas buffer: pid={}, pkg={}", pid, pkg);
+            info!("New fas buffer on: [{pkg}]");
 
             trigger_load_fas(&self.extension, pid, pkg.clone());
 
