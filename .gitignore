@@ -1,0 +1,11 @@
+# target
+/target
+
+# build
+/output
+
+# py
+/__pycache__
+
+# idea
+/.idea
