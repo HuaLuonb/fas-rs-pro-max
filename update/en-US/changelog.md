@@ -1,0 +1,11 @@
+# v4.1.0 (2024-12-03)
+
+* build(deps): bump libc from 0.2.166 to 0.2.167 ([921861b](https://github.com/shadow3aaa/fas-rs/commit/921861b))
+* build(deps): bump mlua from 0.10.1 to 0.10.2 ([a56ef26](https://github.com/shadow3aaa/fas-rs/commit/a56ef26))
+* build(deps): Update dependencies ([4702a53](https://github.com/shadow3aaa/fas-rs/commit/4702a53))
+* docs: Update compilation steps description ([30dc1e2](https://github.com/shadow3aaa/fas-rs/commit/30dc1e2))
+* chore: Remove .gitmodules because it has no effect ([c9bc1ce](https://github.com/shadow3aaa/fas-rs/commit/c9bc1ce))
+* chore: Update copyright information and license declaration to GPL-3.0 ([8d4afc6](https://github.com/shadow3aaa/fas-rs/commit/8d4afc6))
+* fix: Fix offset not working properly on new CPU controllers ([b970c7a](https://github.com/shadow3aaa/fas-rs/commit/b970c7a))
+* Revert "fix: Deprecate OFFSET_MAP to fix incompatibility between offset and new policies" ([16a1475](https://github.com/shadow3aaa/fas-rs/commit/16a1475))
+* feat: Mitigate migration issues ([1dc8437](https://github.com/shadow3aaa/fas-rs/commit/1dc8437))

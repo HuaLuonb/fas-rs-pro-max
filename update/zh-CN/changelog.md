@@ -1,0 +1,11 @@
+# v4.1.0 (2024-12-03)
+
+* build(deps): bump libc from 0.2.166 to 0.2.167 ([921861b](https://github.com/shadow3aaa/fas-rs/commit/921861b))
+* build(deps): bump mlua from 0.10.1 to 0.10.2 ([a56ef26](https://github.com/shadow3aaa/fas-rs/commit/a56ef26))
+* build(deps): 更新依赖项 ([4702a53](https://github.com/shadow3aaa/fas-rs/commit/4702a53))
+* docs: 更新编译步骤描述 ([30dc1e2](https://github.com/shadow3aaa/fas-rs/commit/30dc1e2))
+* chore: 删除.gitmodules因为它没有作用 ([c9bc1ce](https://github.com/shadow3aaa/fas-rs/commit/c9bc1ce))
+* chore: 更新版权信息和许可证声明为GPL-3.0 ([8d4afc6](https://github.com/shadow3aaa/fas-rs/commit/8d4afc6))
+* fix: 修复offset在新的cpu控制器未正常工作 ([b970c7a](https://github.com/shadow3aaa/fas-rs/commit/b970c7a))
+* Revert "fix: 废弃OFFSET_MAP以修复offset和新策略不兼容的问题" ([16a1475](https://github.com/shadow3aaa/fas-rs/commit/16a1475))
+* feat: 缓解迁移问题 ([1dc8437](https://github.com/shadow3aaa/fas-rs/commit/1dc8437))
